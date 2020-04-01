@@ -1,6 +1,6 @@
 import re
 
-from zope.sqlalchemy import ZopeTransactionEvents
+import zope.sqlalchemy
 
 from sqlalchemy import Column, Integer, DateTime, engine_from_config
 from sqlalchemy.interfaces import PoolListener
@@ -124,10 +124,10 @@ class SessionFactory(object):
     @classmethod
     def register(cls, name, scoped):
         if scoped:
-            cls.sessions[name] = scoped_session(sessionmaker(
-                extension=ZopeTransactionEvents()))
+            cls.sessions[name] = scoped_session(sessionmaker())
         else:
             cls.sessions[name] = sessionmaker()
+        zope.sqlalchemy.register(cls.sessions[name])
         return cls.sessions[name]
 
     @classmethod

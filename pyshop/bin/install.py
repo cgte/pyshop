@@ -1,5 +1,6 @@
 import os
 import sys
+import transaction
 
 try:
     from pyramid.paster import get_appsettings, setup_logging
@@ -84,19 +85,19 @@ def populate(engine, interactive=True):
 
         piplogin = 'pip'
         pippassword = 'changeme'
+    with transaction.manager:
+        admin = User(login=unicode(login),
+                     password=unicode(password),
+                     email=unicode(email))
+        admin.groups.append(admin_group)
+        #session.add(admin)
+        pip = User(login=unicode(piplogin),
+                   password=unicode(pippassword),
+                   )
+        pip.groups.append(pip_group)
+        #session.add(pip)
 
-    admin = User(login=unicode(login),
-                 password=unicode(password),
-                 email=unicode(email))
-    admin.groups.append(admin_group)
-    session.add(admin)
-    pip = User(login=unicode(piplogin),
-               password=unicode(pippassword),
-               )
-    pip.groups.append(pip_group)
-    session.add(pip)
-
-    session.commit()
+        # session.commit()
 
 
 def main(argv=sys.argv):
@@ -114,8 +115,8 @@ def main(argv=sys.argv):
             return
         interactive = False
         config_uri = argv[2]
-        
-        
+
+
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
     engine = create_engine('pyshop', settings, scoped=False)
