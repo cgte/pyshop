@@ -85,19 +85,18 @@ def populate(engine, interactive=True):
 
         piplogin = 'pip'
         pippassword = 'changeme'
-    with transaction.manager:
-        admin = User(login=unicode(login),
-                     password=unicode(password),
-                     email=unicode(email))
-        admin.groups.append(admin_group)
-        #session.add(admin)
-        pip = User(login=unicode(piplogin),
-                   password=unicode(pippassword),
-                   )
-        pip.groups.append(pip_group)
-        #session.add(pip)
 
-        # session.commit()
+    admin = User(login=unicode(login),
+                 password=unicode(password),
+                 email=unicode(email))
+    admin.groups.append(admin_group)
+    session.add(admin)
+    pip = User(login=unicode(piplogin),
+               password=unicode(pippassword),
+               )
+    pip.groups.append(pip_group)
+    session.add(pip)
+    transaction.commit()
 
 
 def main(argv=sys.argv):

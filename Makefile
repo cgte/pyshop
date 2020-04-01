@@ -22,4 +22,4 @@ build_and_test: clean_and_prepare
 	pip install cryptacular pytest pytest-cov pyfakefs
 	python setup.py install
 	python setup.py develop
-	pytest pyshop
+	pytest pyshop -x

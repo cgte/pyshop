@@ -1,3 +1,5 @@
+import transaction
+
 from pyshop.models import (create_engine, dispose_engine,
                            Base, DBSession,
                            Group, User, Permission,
@@ -9,9 +11,9 @@ from .conf import settings
 
 def setUpModule():
 
-    engine = create_engine(settings)
+    engine = create_engine(settings, scoped=True)  
     populate(engine, interactive=False)
-
+    
 
     session = DBSession()
     admin_user = User.by_login(session, u'admin')
@@ -92,7 +94,7 @@ def setUpModule():
                                       package_type=u'sdist'))
     session.add(release4)
 
-    session.commit()
+    transaction.commit()
 
 
 def tearDownModule():
