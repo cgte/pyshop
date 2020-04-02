@@ -33,9 +33,11 @@ requires = [
 ]
 
 
-test_requires = ['nose', 'pyfakefs']
+test_requires = ['pyfakefs']
 if sys.version_info < (2, 7):
-    test_requires.append('unittest2')
+    test_requires.append('unittest2', 'mock')
+if sys.version_info[0] < 3:
+    test_requires.append('mock')
 
 
 extras_require = {
