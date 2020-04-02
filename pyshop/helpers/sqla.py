@@ -1,4 +1,5 @@
 import re
+import sys
 
 import zope.sqlalchemy
 
@@ -10,7 +11,7 @@ from sqlalchemy.sql.expression import func, asc, desc
 from sqlalchemy.orm import scoped_session, sessionmaker, joinedload
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
-
+py37 = sys.version_info > (3,7,0)
 
 class ModelError(Exception):
 
@@ -62,7 +63,10 @@ class _Base(object):
                 yield m
             session.flush()
             if len(page) != page_size:
-                raise StopIteration()
+                if py37:
+                    return
+                else: 
+                    raise StopIteration()
             offset += page_size
 
     @classmethod
