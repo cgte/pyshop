@@ -1,5 +1,6 @@
 import transaction
 
+
 from pyshop.models import (create_engine, dispose_engine,
                            Base, DBSession,
                            Group, User, Permission,
@@ -7,6 +8,13 @@ from pyshop.models import (create_engine, dispose_engine,
                            )
 from pyshop.bin.install import populate
 from .conf import settings
+
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
 
 
 def setUpModule():

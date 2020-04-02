@@ -1,39 +1,19 @@
 import uuid
-from unittest import mock
-
-from pyshop.tests import case
+from pyshop.utils import patched_urandom
+from pyshop.tests import case, mock
 from pyshop.tests import setUpModule, tearDownModule
 from pyshop.compat import unicode
 
 
-def fake_urandom(k):
-    import random, string
-
-    alpha = string.ascii_letters + string.digits
-
-    return bytes("".join(random.choices(alpha, k=k)), "utf-8")
-
-
 class AccountTestCase(case.ViewTestCase):
-    def setUp(self):
+
+    @mock.patch('os.urandom', side_effect=patched_urandom)
+    def setUp(self, _dummy):
         super(AccountTestCase, self).setUp()
         from pyshop.models import User, Group
-
-        try:  # fakefs issue on pypy3
-            uuid.uuid4()
-            patch = False
-        except NotImplementedError:
-            patch = True
-
-        if patch:
-            with mock.patch("os.urandom", side_effect=fake_urandom):
-                self.account_login = unicode(uuid.uuid4())
-                u = User(login=self.account_login, password=u"secret")
-        else:
-            self.account_login = unicode(uuid4())
-            u = User(login=self.account_login, password=u"secret")
-
-        u.groups.append(Group.by_name(self.session, u"developer"))
+        self.account_login = unicode(uuid.uuid4())
+        u = User(login=self.account_login, password=u'secret')
+        u.groups.append(Group.by_name(self.session, u'developer'))
         self.session.add(u)
         self.session.flush()
         self.account_id = u.id
@@ -56,6 +36,7 @@ class AccountTestCase(case.ViewTestCase):
         self.assertEqual(len(view['users']), 4)
         self.assertIsInstance(view['users'][0], User)
 
+
     def test_get_create_ok(self):
         from pyshop.views.account import Create
         from pyshop.models import User, Group
@@ -70,8 +51,9 @@ class AccountTestCase(case.ViewTestCase):
         self.assertIsInstance(view['user'], User)
         self.assertIsNone(view['user'].id)
         self.assertIsNone(view['user'].login)
-
-    def test_post_create_ok(self):
+        
+    @mock.patch('os.urandom', side_effect=patched_urandom)
+    def test_post_create_ok(self, _dummy):
         from pyshop.views.account import Create
         from pyshop.models import User, Group
         view = Create(self.create_request({'form.submitted': u'1',

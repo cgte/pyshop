@@ -1,4 +1,5 @@
-from pyshop.tests import case
+from pyshop.utils import patched_urandom
+from pyshop.tests import case, mock
 from pyshop.tests import setUpModule, tearDownModule
 
 
@@ -18,8 +19,9 @@ class AccountTestCase(case.ViewTestCase):
         self.assertEqual(set(view.keys()),
                          set(['pyshop', 'user', 'errors']))
         self.assertEqual(view['user'].login, u'admin')
-
-    def test_update_post_ok(self):
+        
+    @mock.patch('os.urandom', side_effect=patched_urandom)
+    def test_update_post_ok(self, _dummy):
         from pyshop.models import User
         from pyshop.views.user import Edit
         view = Edit(self.create_request({'form.submitted': u'1',
@@ -39,8 +41,9 @@ class AccountTestCase(case.ViewTestCase):
         admin.firstname = None
         admin.lastname = None
         self.session.add(admin)
-
-    def test_change_password_post_ok(self):
+        
+    @mock.patch('os.urandom', side_effect=patched_urandom)
+    def test_change_password_post_ok(self, _dummy):
         from pyshop.models import User
         from pyshop.views.user import ChangePassword as ChangePwd
         view = ChangePwd(self.create_request({'form.submitted': u'1',
