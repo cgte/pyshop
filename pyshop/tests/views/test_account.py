@@ -1,17 +1,39 @@
+import uuid
+from unittest import mock
+
 from pyshop.tests import case
 from pyshop.tests import setUpModule, tearDownModule
 from pyshop.compat import unicode
 
 
-class AccountTestCase(case.ViewTestCase):
+def fake_urandom(k):
+    import random, string
 
+    alpha = string.ascii_letters + string.digits
+
+    return bytes("".join(random.choices(alpha, k=k)), "utf-8")
+
+
+class AccountTestCase(case.ViewTestCase):
     def setUp(self):
         super(AccountTestCase, self).setUp()
-        import uuid
         from pyshop.models import User, Group
-        self.account_login = unicode(uuid.uuid4())
-        u = User(login=self.account_login, password=u'secret')
-        u.groups.append(Group.by_name(self.session, u'developer'))
+
+        try:  # fakefs issue on pypy3
+            uuid.uuid4()
+            patch = False
+        except NotImplementedError:
+            patch = True
+
+        if patch:
+            with mock.patch("os.urandom", side_effect=fake_urandom):
+                self.account_login = unicode(uuid.uuid4())
+                u = User(login=self.account_login, password=u"secret")
+        else:
+            self.account_login = unicode(uuid4())
+            u = User(login=self.account_login, password=u"secret")
+
+        u.groups.append(Group.by_name(self.session, u"developer"))
         self.session.add(u)
         self.session.flush()
         self.account_id = u.id
