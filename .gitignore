@@ -27,7 +27,7 @@ docs/_build
 .coverage
 .tox
 nosetests.xml
-
+prof/
 # Translations
 *.mo
 
@@ -39,6 +39,8 @@ nosetests.xml
 .vscode
 venv*
 
+py*env
+.eggs
 # project files
 /repository/*
 *.db

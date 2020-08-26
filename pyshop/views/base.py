@@ -30,18 +30,18 @@ class ViewBase(object):
             self.login = login
             self.user = User.by_login(self.session, login)
         else:
-            self.login = u'anonymous'
+            self.login = u"anonymous"
             self.user = None
 
     def update_response(self, response):
         pass
 
-    def on_error(self, exception):
-        return True
+    # def on_error(self, exception):
+    #    raise exception
 
     def __call__(self):
         try:
-            log.info('dispatch view %s', self.__class__.__name__)
+            log.info("dispatch view %s", self.__class__.__name__)
             response = self.render()
             self.update_response(response)
             # if isinstance(response, dict):
@@ -49,9 +49,7 @@ class ViewBase(object):
             self.session.flush()
         except Exception as exc:
             if self.on_error(exc):
-                log.error('Error on view %s',
-                          self.__class__.__name__,
-                          exc_info=True)
+                log.error("Error on view %s", self.__class__.__name__, exc_info=True)
                 raise
         return response
 
@@ -68,12 +66,12 @@ class View(ViewBase):
         # this is a view to render
         if isinstance(response, dict):
             global_ = {
-                'pyshop': {
-                    'version': __version__,
-                    'login':  self.login,
-                    'user':  self.user,
-                    },
-                }
+                "pyshop": {
+                    "version": __version__,
+                    "login": self.login,
+                    "user": self.user,
+                },
+            }
             response.update(global_)
 
 
@@ -81,6 +79,7 @@ class RedirectView(View):
     """
     Base class of every view that redirect after post.
     """
+
     redirect_route = None
     redirect_kwargs = {}
 
@@ -88,8 +87,11 @@ class RedirectView(View):
         return self.redirect()
 
     def redirect(self):
-        return HTTPFound(location=route_url(self.redirect_route, self.request,
-                                            **self.redirect_kwargs))
+        return HTTPFound(
+            location=route_url(
+                self.redirect_route, self.request, **self.redirect_kwargs
+            )
+        )
 
 
 class CreateView(RedirectView):
@@ -105,7 +107,7 @@ class CreateView(RedirectView):
         prefix = self.model.__tablename__
         for k, v in self.request.params.items():
             if v and k.startswith(prefix):
-                kwargs[k.split('.').pop()] = v
+                kwargs[k.split(".").pop()] = v
         return kwargs
 
     def get_model(self):
@@ -129,19 +131,19 @@ class CreateView(RedirectView):
         return len(errors) == 0
 
     def save_model(self, model):
-        log.debug('saving %s', model.__class__.__name__)
-        log.debug('%r', model.__dict__)
+        log.debug("saving %s", model.__class__.__name__)
+        log.debug("%r", model.__dict__)
         self.session.add(model)
 
     def render(self):
-        if 'form.cancelled' in self.request.params:
+        if "form.cancelled" in self.request.params:
             return self.redirect()
 
-        log.debug('rendering %s', self.__class__.__name__)
+        log.debug("rendering %s", self.__class__.__name__)
         errors = []
         model = self.get_model()
 
-        if 'form.submitted' in self.request.params:
+        if "form.submitted" in self.request.params:
 
             self.validate(model, errors)
 
@@ -156,7 +158,7 @@ class CreateView(RedirectView):
                 self.save_model(model)
                 return self.redirect()
 
-        rv = {'errors': errors, self.model.__tablename__: model}
+        rv = {"errors": errors, self.model.__tablename__: model}
         self.update_view(model, rv)
         log.debug(repr(rv))
         return rv
@@ -169,13 +171,15 @@ class EditView(CreateView):
 
     def get_model(self):
         return self.model.by_id(
-            self.session, int(self.request.matchdict[self.matchdict_key]))
+            self.session, int(self.request.matchdict[self.matchdict_key])
+        )
 
 
 class DeleteView(RedirectView):
     """
     Base class of every delete view.
     """
+
     model = None
     matchdict_key = None
     redirect_route = None
@@ -187,9 +191,10 @@ class DeleteView(RedirectView):
     def render(self):
 
         model = self.model.by_id(
-            self.session, int(self.request.matchdict[self.matchdict_key]))
+            self.session, int(self.request.matchdict[self.matchdict_key])
+        )
 
-        if 'form.submitted' in self.request.params:
+        if "form.submitted" in self.request.params:
             self.delete(model)
             return self.redirect()
 
